@@ -1,0 +1,19 @@
+---
+title: "Research1.Rmd"
+author: "Jarrett Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+
+Host redhawk
+  HostName redhawk.hpc.muohio.edu
+  User linjc2
+  IdenifyFile ~/.ssh/id_ed25519
+  AddKeysToAgent yes
+  UseKeychain yes
+  ServerAliveInterval 60
+  ControlMaster auto
+  ControlPath ~/.ssh/cm/%r@%h:%p
+
