@@ -3,3 +3,5 @@
 *.zip
 kpisti/
 Redhawk_git
+data/raw/*
+!data/raw/.gitkeep
