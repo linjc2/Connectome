@@ -20,7 +20,7 @@ All files above are fetched and checksum-verified by `src/download_data.sh`.
 Authors' matrices cover 185 anterior neurons: B (Cook) 601 links / 7 self-loops, B (Varshney) 301 / 2, C 5,557 contacting pairs, X is 185 x 18.
 All 594 off-diagonal GJ pairs fall inside C (none outside). 43 of 185 neurons (23%) have no innexin in X.
 
-- **Varshney: exact match.** `ConnOrdered_040903.mat`, matrix `Ag_t_ordered`, symmetrized and subset to the 185 neurons gives 301 links, 2 self-loops, 0 mismatches. Use `Ag_t_ordered` (not `A_init_t_ordered`, which is the chemical network).
+- **Varshney: exact match.** `ConnOrdered_040903.mat`, matrix `Ag_t_ordered`, symmetrized and subset to the 185 neurons gives 301 links, 2 self-loops, 0 mismatches. Use `Ag_t_ordered` (not `A_init_t_ordered`, which is the chemical network). Built by `src/build_varshney_B.py`; byte-identical to `CEO_Gap_OnlyContact.csv`.
 - **Cook: exact match with the WormWiring edge list** (see "Resolved" below). SI 5 "hermaphrodite gap jn symmetric" (binarized, 185-neuron subset) gives 611 links / 7 self-loops vs 601 / 7. 78 edges differ (44 only in the download, 34 only in the authors' file). Investigated (see below); the cause is still open.
 - **Contact C and expression X:** taken from the authors' files for now. Note `inx-5` and `inx-11` columns of X are identical (columns 3 and 11), matching the identical rows in SI Fig. S3.
 

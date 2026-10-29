@@ -31,6 +31,13 @@ Rebuild the authors' B exactly from the WormWiring edge list (prints 0 differenc
 python src/build_cook_B_wormwiring.py
 ```
 
+Robustness run on the Varshney 2011 connectome (the paper uses alpha = 0.12 here):
+
+```bash
+python src/build_varshney_B.py
+python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_varshney.csv data/reference_authors/INXExpressionJustContact.csv 0.12 results/varshney
+```
+
 Rebuild B from Cook 2019 SI 5 instead and rerun with it:
 
 ```bash
