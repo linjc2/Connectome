@@ -4,7 +4,10 @@
 |------|--------|----------|
 | connectome/ConnOrdered_040903.mat | https://github.com/lrvarshney/elegans (Varshney 2011) | GJ connectome B, robustness run |
 | connectome/NeuronTypeOrdered_040903.mat | same | neuron class labels |
-| connectome/cook2019_SI5_adjacency_matrices_corrected_2020-07.xlsx | https://github.com/openworm/ConnectomeToolbox (Cook 2019 SI 5, corrected July 2020) | GJ connectome B, main run |
+| connectome/cook2019_SI5_adjacency_matrices_original.xlsx | https://github.com/openworm/ConnectomeToolbox (Cook 2019 SI 5, original) | GJ connectome B, main run (`src/build_cook_B.py`) |
+| connectome/cook2019_SI5_adjacency_matrices_corrected_2020-07.xlsx | same (Cook 2019 SI 5, corrected July 2020) | check only; same gap-junction result as the original |
+
+All files above are fetched and checksum-verified by `src/download_data.sh`.
 | expression/Altun2009_DevDyn_innexin_map.pdf | https://www.wormatlas.org/papers/Altun%202009.pdf | innexin expression X (figures/tables, needs manual curation) |
 
 ## Still missing
