@@ -45,7 +45,7 @@ Expression is only resolved to neuron class, not individual neurons.
 
 - Exact form of the curated expression table (Hobert lab) may need to be requested; Altun 2009 alone is images and text.
 - Cook 2019 distinguishes hermaphrodite and male; use hermaphrodite.
-- Confirm which Cook 2019 supplement gives the 1,051-link GJ list.
+- ~~Confirm which Cook 2019 supplement gives the GJ list.~~ Resolved: the WormWiring edge list `herm_full_edgelist.csv`, not SI 5 (see `data/raw/SOURCES.md`).
 - The unusual `inx-5` / `inx-11` rows in SI Fig. S3 are identical, which suggests inx-5 is a duplicate of inx-11 in X. Check the data.
 - Heteromeric rules and chemical synapses are out of scope for the paper (SI text).
 

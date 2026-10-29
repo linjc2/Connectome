@@ -25,7 +25,13 @@ Reproduce the authors' rules from their processed inputs:
 python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/reference_authors/GapJunctContact.csv data/reference_authors/INXExpressionJustContact.csv 0.215 results/authors_inputs
 ```
 
-Rebuild B from Cook 2019 and rerun with it:
+Rebuild the authors' B exactly from the WormWiring edge list (prints 0 differences):
+
+```bash
+python src/build_cook_B_wormwiring.py
+```
+
+Rebuild B from Cook 2019 SI 5 instead and rerun with it:
 
 ```bash
 python src/build_cook_B.py

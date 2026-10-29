@@ -21,6 +21,9 @@ fetch "$OPENWORM/SI%205%20Connectome%20adjacency%20matrices.xlsx" \
 fetch "$OPENWORM/SI%205%20Connectome%20adjacency%20matrices%2C%20corrected%20July%202020.xlsx" \
       data/raw/connectome/cook2019_SI5_adjacency_matrices_corrected_2020-07.xlsx \
       1f4fdbf84746b69b49a8da0816f52787860ce349b638dce37924ba80f90c70c9
+fetch "$OPENWORM/herm_full_edgelist.csv" \
+      data/raw/connectome/herm_full_edgelist.csv \
+      142693f17556148d7f962835b18ac6dd5af18b7467eef61815ebc1dd5474c0ca
 fetch "$VARSHNEY/ConnOrdered_040903.mat" \
       data/raw/connectome/ConnOrdered_040903.mat \
       bd05af64c7d8c14ff44988e0f009b45d1ebe7db0b7194fff341fc4885cc91d38

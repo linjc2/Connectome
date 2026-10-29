@@ -6,6 +6,7 @@
 | connectome/NeuronTypeOrdered_040903.mat | same | neuron class labels |
 | connectome/cook2019_SI5_adjacency_matrices_original.xlsx | https://github.com/openworm/ConnectomeToolbox (Cook 2019 SI 5, original) | GJ connectome B, main run (`src/build_cook_B.py`) |
 | connectome/cook2019_SI5_adjacency_matrices_corrected_2020-07.xlsx | same (Cook 2019 SI 5, corrected July 2020) | check only; same gap-junction result as the original |
+| connectome/herm_full_edgelist.csv | same repo (WormWiring hermaphrodite edge list, Cook data) | GJ connectome B as the authors built it (`src/build_cook_B_wormwiring.py`) |
 
 All files above are fetched and checksum-verified by `src/download_data.sh`.
 | expression/Altun2009_DevDyn_innexin_map.pdf | https://www.wormatlas.org/papers/Altun%202009.pdf | innexin expression X (figures/tables, needs manual curation) |
@@ -20,7 +21,7 @@ Authors' matrices cover 185 anterior neurons: B (Cook) 601 links / 7 self-loops,
 All 594 off-diagonal GJ pairs fall inside C (none outside). 43 of 185 neurons (23%) have no innexin in X.
 
 - **Varshney: exact match.** `ConnOrdered_040903.mat`, matrix `Ag_t_ordered`, symmetrized and subset to the 185 neurons gives 301 links, 2 self-loops, 0 mismatches. Use `Ag_t_ordered` (not `A_init_t_ordered`, which is the chemical network).
-- **Cook: close but not identical.** SI 5 "hermaphrodite gap jn symmetric" (binarized, 185-neuron subset) gives 611 links / 7 self-loops vs 601 / 7. 78 edges differ (44 only in the download, 34 only in the authors' file). Investigated (see below); the cause is still open.
+- **Cook: exact match with the WormWiring edge list** (see "Resolved" below). SI 5 "hermaphrodite gap jn symmetric" (binarized, 185-neuron subset) gives 611 links / 7 self-loops vs 601 / 7. 78 edges differ (44 only in the download, 34 only in the authors' file). Investigated (see below); the cause is still open.
 - **Contact C and expression X:** taken from the authors' files for now. Note `inx-5` and `inx-11` columns of X are identical (columns 3 and 11), matching the identical rows in SI Fig. S3.
 
 ## Cook mismatch investigation (611 vs 601 links; 78 differing edges)
@@ -33,7 +34,13 @@ Ruled out:
 Partly explained:
 - 9 of the 44 Cook-only edges lie outside the contact matrix C. The authors' B has no GJs outside C, so masking B with C removes these. That leaves about 69 differing edges.
 
-Still unexplained:
+Unexplained before the edge list was found (see Resolved below):
 - 35 Cook-only edges inside C (mostly weight 1-2) and 34 authors-only edges that are absent from SI 5 entirely. 14 of the 44 Cook-only edges appear in Varshney; only 1 of the 34 authors-only edges does.
 - Differences concentrate on SIB* neurons (SIBVL 9, SIBDL 8, SIBDR 7, SIBVR 7), then PVNR, AVBR, RIVL, ADEL.
 - Agreement is Jaccard 0.878. The authors probably used a Cook-lab version of the data (e.g. an earlier or WormWiring-hosted release) that differs from SI 5 for these neurons. Next step: check the WormWiring Cook adjacency files and, if needed, ask the authors.
+
+### Resolved (2026-10-29): the authors used the WormWiring edge list, not SI 5
+
+`herm_full_edgelist.csv` (WormWiring hermaphrodite edge list of the Cook data, as kept in the openworm ConnectomeToolbox repo) reproduces the authors' B exactly: taking the `electrical` edges, symmetrizing, binarizing at weight > 0 and subsetting to the 185 neurons gives 601 links / 7 self-loops, byte-identical to `GapJunctContact.csv`. No masking by C is needed (none of its GJs fall outside C).
+
+So the 69 differences between SI 5 and the authors' B are differences between two releases of the Cook data, not a processing step. The 34 authors-only edges have weight 0 in SI 5; the 35 SI 5-only edges (22 of weight 1, 7 of weight 2) are absent from the edge list. The current wormwiring.org page links only the SI spreadsheets, so the edge list is fetched from the ConnectomeToolbox copy (pinned commit, checksum in `src/download_data.sh`).
