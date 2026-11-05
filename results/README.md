@@ -50,3 +50,34 @@ inx-8/inx-12, has Varshney z = 1.96, which SI Fig. S4 prints as 2.0. No other ru
 - Varshney only: inx-1/inx-11, inx-1/inx-17, inx-1/inx-5, inx-11/inx-12, inx-12/inx-5, inx-13/inx-18, inx-18/inx-18, inx-18/unc-7, inx-2/inx-2, inx-6/che-7.
 - Correlation of the two O matrices: 0.82 (z-scores: 0.83). Varshney has half as many links (301 vs 601), so it is the noisier fit.
 - `varshney/*_0.2150.*` is the same run at the Cook alpha for comparison: 20 rules, the same 11 shared.
+
+## SI figures (`figures/`)
+
+`src/plot_si_figures.py` recreates SI Figs. S2-S6 from our data (S1 is a schematic). `src/check_against_si.py` reads the
+tables printed in the SI PDF and compares them with ours: all 6 match to the printed precision (Fig. S3 Cook rules and
+z-scores, Fig. S4 Varshney rules and z-scores, Fig. S6 Cook and Varshney Moore-Penrose solutions).
+
+| Figure | File | Result |
+|--------|------|--------|
+| S2 alpha selection | `figS2_alpha_selection.png`, `alpha_scan_*.csv` | Generalized cross-validation minimum at alpha = 0.215 for Cook (r²/τ² = 8.5503e-6, as in the authors' `workfile.txt`) and at 0.120 for Varshney, the value used in Fig. S4. The Varshney curve is not in the SI. |
+| S3 Cook rules | `figS3_cook_rules.png` | Matches the SI table. |
+| S4 Varshney rules | `figS4_varshney_rules.png` | Matches the SI table. |
+| S5 eigenvalues of O (Cook) | `figS5_eigenvalues.png` | "full" (7 negative) and "sig. pos." (6 negative) match the SI points. "sig." (\|z\| >= 2) matches in 17 of 18 points: we have one eigenvalue at -1.67 where the SI has a fourth zero. Cause not found; dropping one or two significant rules does not reproduce it. The spectrum is indefinite either way, as the paper states. |
+| S6 Moore-Penrose (alpha -> 0) | `figS6_moore_penrose.png`, `rule_matrix_MP_*.csv` | Both tables match the SI. |
+
+### Fig. S2: choosing alpha
+![Fig. S2](figures/figS2_alpha_selection.png)
+
+### Fig. S3: Cook rules and z-scores
+<img src="figures/figS3_cook_rules.png" width="700" alt="Fig. S3">
+
+### Fig. S4: Varshney rules and z-scores
+<img src="figures/figS4_varshney_rules.png" width="700" alt="Fig. S4">
+
+### Fig. S5: eigenvalues of O
+<img src="figures/figS5_eigenvalues.png" width="520" alt="Fig. S5">
+
+### Fig. S6: Moore-Penrose solutions
+<img src="figures/figS6_moore_penrose.png" width="700" alt="Fig. S6">
+
+Explanations of the terms and the procedure: [`supplementary/README.md`](../supplementary/README.md).

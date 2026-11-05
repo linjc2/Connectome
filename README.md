@@ -6,7 +6,8 @@ of the C. elegans nervous system", PNAS 117(52). Built from the raw data up.
 - Plan and data sources: [docs/DATA_COLLECTION_OUTLINE.md](docs/DATA_COLLECTION_OUTLINE.md)
 - `data/raw/` downloaded source data (connectomes, contact, expression)
 - `data/processed/` rebuilt B, C, X matrices
-- `src/` pipeline code, `results/` outputs
+- `src/` pipeline code, `results/` outputs and recreated SI figures
+- [`supplementary/`](supplementary/README.md) explanation of the model, procedure, data and terms, with graphics
 
 ## How to run
 
@@ -43,6 +44,15 @@ Rebuild B from Cook 2019 SI 5 instead and rerun with it:
 ```bash
 python src/build_cook_B.py
 python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_cook_rebuilt.csv data/reference_authors/INXExpressionJustContact.csv 0.215 results/cook_rebuilt
+```
+
+Recreate SI Figs. S2-S6 in `results/figures/` (needs the Cook and Varshney runs above; takes a few minutes), then
+compare our numbers with the tables printed in the SI PDF (not in the repository; download it from PNAS):
+
+```bash
+python src/plot_si_figures.py
+python src/check_against_si.py pnas.2009093117.sapp.pdf
+python src/plot_supplementary.py
 ```
 
 See [results/README.md](results/README.md) for what the outputs mean.
