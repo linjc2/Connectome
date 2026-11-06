@@ -1,4 +1,4 @@
-"""Explanatory figures for supplementary/: the model's matrices, the significant rule network, and Cook vs Varshney.
+"""Explanatory figures for supplementary/: the input matrices, the z-scores of O, the rule network, and Cook vs Varshney.
 
 Usage (from the repository root): python src/plot_supplementary.py
 Needs the SCM runs in results/authors_inputs (Cook) and results/varshney (alpha 0.12).
@@ -8,9 +8,9 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, TwoSlopeNorm
+from matplotlib.colors import ListedColormap
 from matplotlib.lines import Line2D
-from plot_si_figures import GENES, PALE_RDBU, INK, MUTED, GRID, NEG, style
+from plot_si_figures import GENES, INK, MUTED, GRID, NEG, style, table_heatmap
 from scm import load
 
 REF = "data/reference_authors"
@@ -22,17 +22,16 @@ LABEL_OFFSET = {"inx-13/inx-13": (-7, 3), "unc-9/unc-9": (-6, 8), "inx-19/inx-19
                 "inx-10/inx-2": (-7, 4), "inx-18/inx-6": (6, 6), "inx-12/inx-8": (6, -9)}
 
 
-def matrices(C, B, X, O):
-    """The four objects of B = X O X^T on the 185 anterior neurons (Cook data)."""
-    fig, axes = plt.subplots(1, 4, figsize=(16, 4.6), gridspec_kw={"width_ratios": [1, 1, 0.45, 1]})
+def matrices(C, B, X):
+    """The three inputs of B = X O X^T on the 185 anterior neurons (Cook data)."""
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.8), gridspec_kw={"width_ratios": [1, 1, 0.45]})
     panels = [
-        (C, BINARY, None, "C: contact\n(185 × 185)", f"{int(np.triu(C).sum()):,} touching pairs\n"),
-        (B, BINARY, None, "B: gap junctions\n(185 × 185)", f"{int(np.triu(B).sum())} links,\nall inside C"),
-        (X, BINARY, None, "X: expression\n(185 × 18)", f"{int((X.sum(1) == 0).sum())} neurons\nexpress none"),
-        (O, PALE_RDBU, TwoSlopeNorm(0, -0.8, 0.8), "O: rule weights\n(18 × 18)", "red = connect,\nblue = avoid"),
+        (C, "C: contact (185 × 185)", f"{int(np.triu(C).sum()):,} touching pairs"),
+        (B, "B: gap junctions (185 × 185)", f"{int(np.triu(B).sum())} links, all inside C"),
+        (X, "X: expression\n(185 × 18)", f"{int((X.sum(1) == 0).sum())} neurons express none"),
     ]
-    for ax, (M, cmap, norm, title, sub) in zip(axes, panels):
-        ax.imshow(M, cmap=cmap, norm=norm, aspect="auto", interpolation="nearest")
+    for ax, (M, title, sub) in zip(axes, panels):
+        ax.imshow(M, cmap=BINARY, aspect="auto", interpolation="nearest")
         ax.set_title(f"{title}\n{sub}", fontsize=10, color=INK, loc="left")
         ax.tick_params(length=0, labelsize=7, labelcolor=MUTED)
         for s in ax.spines.values():
@@ -42,12 +41,26 @@ def matrices(C, B, X, O):
         ax.set_xlabel("neuron", color=INK)
     axes[2].set_xticks(range(18), GENES, rotation=90, fontsize=6)
     axes[2].set_xlabel("innexin", color=INK)
-    axes[3].set_xticks(range(18), GENES, rotation=90, fontsize=6)
-    axes[3].set_yticks(range(18), GENES, fontsize=6)
-    fig.suptitle("The Spatial Connectome Model: B ≈ X O Xᵀ, fitted only on touching pairs (C = 1)",
+    fig.suptitle("The model's inputs: B ≈ X O Xᵀ, fitted only on touching pairs (C = 1)",
                  fontsize=12, color=INK, x=0.01, ha="left")
     fig.tight_layout()
     fig.savefig(f"{OUT}/model_matrices.png", dpi=150)
+    plt.close(fig)
+
+
+def o_zscores(Z):
+    """The output: z-score of every rule, as in the bottom table of SI Fig. S3. Bold = significant (z >= 2)."""
+    fig, ax = plt.subplots(figsize=(9, 8))
+    table_heatmap(ax, Z, ".1f", "", nan_text="-")
+    for k, t in enumerate(ax.texts):  # one label per cell, row by row
+        t.set_fontsize(8)
+        if Z.flat[k] >= 2:  # unrounded: a few cells print as 2.0 but are 1.96-1.99
+            t.set_fontweight("bold")
+    ax.set_title("z-scores of the rule matrix O (Cook data, α = 0.215)\n"
+                 "red = connect more than chance, blue = less; bold = significant (z ≥ 2); "
+                 "- = undefined (inx-5/inx-11 duplicate)", fontsize=10, color=INK, loc="left", pad=48)
+    fig.tight_layout()
+    fig.savefig(f"{OUT}/o_zscores.png", dpi=150)
     plt.close(fig)
 
 
@@ -117,9 +130,10 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     C, X = load(f"{REF}/ContactSubgraphMatrix.csv", int), load(f"{REF}/INXExpressionJustContact.csv", int)
     B = load(f"{REF}/GapJunctContact.csv", int)
-    O = load("results/authors_inputs/rule_matrix_0.2150.csv")
+
     Zc, Zv = load("results/authors_inputs/zscores_0.2150.csv"), load("results/varshney/zscores_0.1200.csv")
-    matrices(C, B, X, O)
+    matrices(C, B, X)
+    o_zscores(Zc)
     rule_network(Zc, Zv)
     cook_vs_varshney(Zc, Zv)
 

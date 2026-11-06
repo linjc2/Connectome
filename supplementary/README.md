@@ -12,21 +12,64 @@ connectome and gene expression, the model recovers the rules.
 
 ## Graphics
 
-![The four matrices of the model](figures/model_matrices.png)
+![The three input matrices of the model](figures/model_matrices.png)
 
-**The model's matrices (Cook data).** C says which of the 185 neurons touch, B which pairs share a gap junction (every
-gap junction is inside C), X which of the 18 innexins each neuron expresses, and O is the result: one weight per pair of
-genes.
+**The model's inputs (Cook data).** C says which of the 185 neurons touch, B which pairs share a gap junction (every
+gap junction is inside C), and X which of the 18 innexins each neuron expresses. Black = 1.
+
+<img src="figures/o_zscores.png" width="720" alt="z-scores of the rule matrix O">
+
+**The output: z-scores of O (as in SI Fig. S3).** One cell per pair of genes; the table is symmetric, so each rule
+appears twice (row *a*, column *b* and row *b*, column *a*). Red cells connect more than chance, blue cells less. The 19
+bold cells in the upper half are the significant rules (z ≥ 2). Some cells print as 2.0 but are 1.96-1.99 and are not
+bold. The four "-" cells are undefined: inx-5 and inx-11 are expressed only in DVC, so rules among them have no variance.
 
 <img src="figures/rule_network.png" width="520" alt="Network of the 19 significant rules">
 
-**The 19 significant rules.** Each line joins two genes whose rule has z ≥ 2; a ring marks a same-gene rule. Blue
-rules are also significant in the independent Varshney connectome.
+**The 19 significant rules as a network.** This draws the bold cells of the table above. Each gene is a dot on the
+circle, and each significant rule is a line between its two genes (heterotypic, e.g. inx-9/inx-17) or a ring around
+one gene (homotypic, e.g. inx-12/inx-12: neurons expressing inx-12 tend to connect to other neurons expressing
+inx-12). Blue rules are also significant in the independent Varshney connectome (12); gray ones only in Cook (7).
+- **Same-gene rules dominate the reproducible set:** 7 of the 12 blue rules are rings (inx-3, -7, -9, -12, -13, -19,
+  unc-9), consistent with hemichannels of the same innexin docking with each other.
+- **inx-10 is a hub:** it has rules with inx-2, inx-3, inx-5 and inx-11, but only inx-2/inx-10 holds up in Varshney.
+- **unc-7 has no significant rule** although it is expressed in 65 neurons; common genes are hard to tell apart from
+  chance.
+- **Lines are only positive rules.** Significant negative rules (e.g. inx-9/inx-12, z = -3.8: neurons expressing these
+  avoid connecting) are in the table but not drawn.
 
 <img src="figures/cook_vs_varshney.png" width="560" alt="z-scores in Cook versus Varshney">
 
 **Robustness.** Each dot is one of the 171 gene pairs. The z-scores agree between the two connectomes (r = 0.83), and
 12 rules are significant in both.
+
+### Reading the eigenvalue plot (SI Fig. S5)
+
+<img src="../results/figures/figS5_eigenvalues.png" width="480" alt="Eigenvalues of O">
+
+O is an 18 × 18 symmetric matrix, so it has 18 real eigenvalues. Each one belongs to an eigenvector v, a weighting of
+the 18 genes, and O can be rebuilt from them: O = Σ λ v vᵀ. Each eigenvector gives every neuron a score, s = X v, from
+the genes it expresses, and that eigenvector's contribution to the predicted connection between neurons *i* and *j* is
+λ s<sub>i</sub> s<sub>j</sub>.
+
+- **Axes.** x is the eigenvalue. y is its rank: the 18 eigenvalues are sorted from smallest to largest, so the point at
+  y = 5 is the 5th smallest. Read it like a cumulative count: the y value where the points cross x = 0 is the number of
+  negative eigenvalues.
+- **Positive eigenvalue: "similar neurons connect".** λ > 0 rewards pairs whose scores have the same sign, so neurons
+  with similar expression along v are predicted to connect.
+- **Negative eigenvalue: "complementary neurons connect".** λ < 0 rewards pairs with opposite signs: neurons expressing
+  one group of genes connect to neurons expressing a different group, and avoid their own kind.
+- **Why the negatives matter.** If every eigenvalue were positive, all wiring could be explained by similarity of
+  expression. Cook's O has 7 negative eigenvalues (the paper says at least 4), and the most negative, -1.68, is close in size
+to the largest positive ones (1.75 and 2.73), so
+  complementarity is a real part of the rules, not noise. This is the paper's point that neurons often connect to
+  neurons that express different innexins.
+- **Size matters more than count.** Eigenvalues near 0 (the middle of the curve) contribute almost nothing; one is
+  exactly 0 because the inx-5 and inx-11 rows of O are identical.
+- **Three series.** "full" uses all of O; "sig." keeps only entries with |z| ≥ 2; "sig. pos." only entries with z ≥ 2
+  (the 19 rules). Negative eigenvalues remain even in "sig. pos.", so they are not produced by the negative entries of
+  O: a set of only positive rules between different genes is already complementary. One "sig." point differs from the
+  SI (see [`results/README.md`](../results/README.md)).
 
 ## Procedure
 
