@@ -43,6 +43,31 @@ inx-12). Blue rules are also significant in the independent Varshney connectome 
 **Robustness.** Each dot is one of the 171 gene pairs. The z-scores agree between the two connectomes (r = 0.83), and
 12 rules are significant in both.
 
+### Reading O and its z-scores
+
+Both tables use the same grid: row = gene *a*, column = gene *b*. Both are symmetric (gap junctions have no direction),
+so every rule appears twice.
+
+**A cell of O** is how much this gene pair adds to the chance that two touching neurons form a gap junction, when one
+expresses gene *a* and the other gene *b*. The prediction for a neuron pair adds up every rule that applies:
+
+> Neuron *i* expresses {inx-12, unc-9} and neuron *j* expresses {inx-12}. Two rules apply:
+> O[inx-12, inx-12] + O[unc-9, inx-12] = 0.38 + (−0.03) = **0.35**, a fairly likely gap junction if they touch.
+
+Positive (red): such neurons connect more often. Negative (blue): they connect less often, even when touching (e.g.
+inx-9/inx-12 = −0.38). Diagonal cells are same-gene (homotypic) rules.
+
+**A cell of the z-score table** asks how surprising that weight is: how many standard deviations O[a, b] is from its
+value if the wiring were random (same contacts, same number of gap junctions per neuron). Weight and z-score answer
+different questions and can disagree:
+
+| Rule | O (strength) | z (reliability) | Why |
+|------|--------------|-----------------|-----|
+| inx-10/inx-10 | 0.42, large | 1.8, not significant | Only 4 neurons express inx-10, so the estimate is noisy |
+| unc-9/unc-9 | 0.06, tiny | 3.1, significant | 85 neurons express unc-9, so even a small effect is consistent |
+
+O says how strong a rule is; z says how sure we are that it is real.
+
 ### Reading the eigenvalue plot (SI Fig. S5)
 
 <img src="../results/figures/figS5_eigenvalues.png" width="480" alt="Eigenvalues of O">
@@ -124,12 +149,24 @@ estimates how well the model would predict data it has not seen. The minimum is 
 
 **6. Test significance.** A large weight could be a coincidence, for example if a gene is common among neurons that
 happen to touch many others. To test this, the connectome is compared with randomized versions that keep each neuron's
-number of gap junctions and only place gap junctions between touching neurons (subgraph randomization). This gives the
-mean and spread of each O<sub>ab</sub> under chance, and
+number of gap junctions and only place gap junctions between touching neurons (subgraph randomization):
+
+1. **Link probabilities under chance.** `alpha_matrix.cpp` does not generate random networks. It computes the
+   probability of a link between each touching pair in the maximum-entropy random ensemble,
+   p<sub>ij</sub> = 1 / (1 + α<sub>i</sub>α<sub>j</sub>), with one parameter per neuron fitted in 100 iterations so
+   that each neuron keeps its number of gap junctions on average. (This α is unrelated to the ridge α.)
+2. **Mean and variance of O.** The fitted rules are a fixed matrix times the connections, O = A b′ with
+   A = (K′ᵀK′ + αI)⁻¹K′ᵀ. If each link is an independent coin flip with probability p<sub>ij</sub>, then
+   mean(O) = A p and var(O) = A² p(1 − p), exactly (`randomized_moments` in `src/scm.py`).
+3. **z-score.**
 
 $$z_{ab} = \frac{O_{ab} - \text{mean}(O^\text{rand}_{ab})}{\text{sd}(O^\text{rand}_{ab})}$$
 
-A rule is called significant if z ≥ 2 (about p < 0.05 for one entry). Cook gives 19 such rules.
+A rule is called significant if **z ≥ 2**, the paper's threshold, which counts only rules that connect *more* than
+chance. That is a **one-sided** test: if z is roughly normal, z ≥ 2 corresponds to p ≈ 0.023 (|z| ≥ 2, two-sided, would
+be p ≈ 0.046). Cook gives 19 such rules. Two caveats: no p-values are computed (the normal approximation is assumed), and
+there is no correction for testing 171 gene pairs, so about 4 of the 19 could pass by chance. The paper uses z to rank
+rules for experimental validation; agreement between two connectomes (step 7) is the stronger test.
 
 **7. Robustness.** Steps 2–6 are repeated on the Varshney connectome, a separate reconstruction from the same
 electron-microscopy images. The question is not whether the numbers are identical but whether the same rules come out
@@ -151,6 +188,27 @@ true zeros, which adds noise to the fit.
 
 How each matrix is rebuilt here: [`data/raw/SOURCES.md`](../data/raw/SOURCES.md).
 
+## Innexins: genes and proteins
+
+"Innexin" names a protein family; each innexin protein is made from its own gene. In *C. elegans* the gene is written
+in lowercase italics (*inx-9*) and the protein in capitals (INX-9). From gene to connection:
+
+```
+inx-9 gene (DNA)
+  → transcribed to mRNA → translated to INX-9 protein
+  → 8 innexin proteins assemble into a ring in the membrane = a hemichannel
+  → hemichannels of two touching neurons dock end to end = one gap junction channel
+  → hundreds of channels clustered together = the gap junction seen in electron microscopy
+```
+
+Connexins, the vertebrate gap-junction proteins, form hemichannels of 6; innexin hemichannels have 8, as shown by the
+structure of *C. elegans* INX-6 (Oshima et al. 2016, *Nat Commun*).
+
+**What X measures.** Altun et al. 2009 used transcriptional reporters: each innexin gene's promoter (its "on switch")
+was fused to a fluorescent protein, and the glowing neurons were identified. So X records where each gene is turned on,
+not where the protein sits. The model assumes that a gene that is on means the protein is present at that neuron's gap
+junctions. Reporters can miss expression, one likely reason 43 neurons show no innexins.
+
 ## Glossary
 
 **Biology**
@@ -158,10 +216,12 @@ How each matrix is rebuilt here: [`data/raw/SOURCES.md`](../data/raw/SOURCES.md)
 - **Chemical synapse:** a one-way connection that passes signals through neurotransmitters. Not modeled here.
 - **Gap junction (GJ):** a direct electrical connection between two touching neurons, made of channels that let ions
   pass both ways. This is what B records.
-- **Innexin:** the protein family that forms gap junctions in invertebrates (connexins in vertebrates). *C. elegans*
-  has 25 innexin genes (inx-1 to inx-22, che-7, unc-7, unc-9); 18 are in X.
-- **Hemichannel:** half of a gap junction. Each neuron assembles innexin subunits into a ring-shaped pore; a gap
-  junction forms when hemichannels from two touching neurons dock. O can be read as a hemichannel compatibility score.
+- **Innexin:** the protein family that forms gap junctions in invertebrates (connexins in vertebrates), each made from
+  its own gene. *C. elegans* has 25 innexin genes, most named *inx-1*, *inx-2*, ...; a few kept names from the mutants
+  that revealed them (*unc-7*, *unc-9*, *che-7*). 18 are in X. See "Innexins: genes and proteins" above.
+- **Hemichannel:** half of a gap junction: a ring of 8 innexin proteins (6 connexins in vertebrates) forming a pore in
+  the membrane. A gap junction channel forms when hemichannels from two touching neurons dock. O can be read as a
+  hemichannel compatibility score.
 - **Homotypic / heterotypic rule:** a rule between the same gene (diagonal of O, e.g. inx-12/inx-12) or two different
   genes (off-diagonal, e.g. inx-9/inx-17).
 - **Contactome:** which neurons physically touch (C).
@@ -184,8 +244,9 @@ How each matrix is rebuilt here: [`data/raw/SOURCES.md`](../data/raw/SOURCES.md)
 **Model and statistics**
 - **Spatial Connectome Model (SCM):** B ≈ X O Xᵀ, fitted only on touching pairs.
 - **O (rule matrix):** 18 × 18 weights, one per gene pair. Positive: neurons expressing these genes connect more than
-  expected. Negative: they connect less, even when touching. These are regression weights, not probabilities (they can
-  be negative or above 1).
+  expected. Negative: they connect less, even when touching. The paper reads a positive weight as an estimated
+  connection probability (inx-2/inx-10 = 0.66: about 66% of such pairs connect), but they are regression weights, not
+  exact probabilities: they can be negative, and several rules add up for the same neuron pair.
 - **Kronecker product (X ⊗ X):** a matrix with one row per neuron pair and one column per gene pair, whose entry is 1
   when neuron *i* expresses gene *a* and neuron *j* expresses gene *b*. It turns the model into a linear regression.
 - **Ridge regression:** least squares plus a penalty α‖o‖² on large weights. Keeps the solution unique and stable.
@@ -201,8 +262,8 @@ How each matrix is rebuilt here: [`data/raw/SOURCES.md`](../data/raw/SOURCES.md)
   degree and only connect touching neurons. The authors' `alpha_matrix.cpp` does not sample networks; it computes the
   probability of each link in this ensemble (iterating 100 times to fit each neuron's degree), and the mean and
   variance of O follow directly from those probabilities.
-- **z-score:** how many standard deviations a weight is from its value in the randomized networks. |z| ≥ 2 is
-  treated as significant.
+- **z-score:** how many standard deviations a weight is from its value in the randomized networks. The paper's rules
+  are those with z ≥ 2 (one-sided, positive only); |z| ≥ 2 is used only for the "sig." series of SI Fig. S5.
 - **Eigenvalue (of O):** O has both positive and negative eigenvalues (SI Fig. S5), so the rules cannot be explained by
   "similar neurons connect" alone; some rules join different genes or keep genes apart.
 - **Generative model:** a model that explains how data could be produced and can generate new data like it.
