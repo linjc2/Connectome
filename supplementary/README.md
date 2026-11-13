@@ -264,6 +264,7 @@ that all three cover.
 |--------|---------|--------|---------------------|
 | B, 185 × 185 | Gap junctions (1 = connected). 601 links for Cook, 301 for Varshney | Cook et al. 2019, *Nature*, via the WormWiring edge list; Varshney et al. 2011, *PLoS Comput Biol* | Electron-microscopy (EM) reconstructions of the White et al. 1986 series. Varshney is the more conservative one. |
 | X, 185 × 18 | Which of 18 innexin genes each neuron expresses (0/1) | Altun et al. 2009, *Dev Dyn*, curated to 0/1 (Hobert lab) | Fluorescent reporter for each innexin gene; glowing neurons identified under the microscope. 18 of the 25 innexins have data. |
+| B, replication | Gap junctions in two new adult worms. 250 and 283 links among the 185 neurons (180 of them present) | Witvliet et al. 2021, *Nature* | Serial-section EM of the nerve ring of 8 new animals from birth to adulthood; we use the two adults. Independent of the White et al. animals behind Cook and Varshney. |
 | C, 185 × 185 | Which neurons touch (1 = touching). 5,592 pairs including 35 self-contacts | Brittin et al. 2018 bioRxiv (*Nature* 2021) | Neuron outlines traced in EM images of the nerve ring; membranes that meet count as touching. |
 
 43 of the 185 neurons (23%) express none of the 18 innexins in X. Some of these are likely missing data rather than
@@ -307,6 +308,11 @@ junctions. Reporters can miss expression, one likely reason 43 neurons show no i
   hemichannel compatibility score.
 - **Homotypic / heterotypic rule:** a rule between the same gene (diagonal of O, e.g. inx-12/inx-12) or two different
   genes (off-diagonal, e.g. inx-9/inx-17).
+- **Left/right pair (bilateral homologs):** *C. elegans* is bilaterally symmetric, so most neurons come in mirror-image
+  pairs, one on each side. Names are a class plus a side: AVA is a class of command interneurons that drive backward
+  movement, AVAL is the left one and AVAR the right one. Some classes have more members (IL1DL, IL1DR, IL1L, IL1R,
+  IL1VL, IL1VR; D = dorsal, V = ventral); some neurons are unpaired on the midline (DVA, RIS, PVT). Partners are the
+  same cell type with the same genes: all 83 pairs among the 185 neurons have identical rows in X.
 - **Contactome:** which neurons physically touch (C).
 - **Nerve ring:** the main bundle of neurons in the worm's head, where the contactome was measured.
 - **Electron microscopy (EM):** imaging of thin tissue slices at nanometer resolution; how connectomes and contactomes
@@ -357,6 +363,12 @@ junctions. Reporters can miss expression, one likely reason 43 neurons show no i
 - **Why gap junctions and not chemical synapses?** Innexins are known to form gap junctions; the genes behind chemical
   synapses are less clear, and chemical synapses are directed. The paper leaves them out.
 - **Does a 1 in B mean the neurons touch?** No, it means they share a gap junction. Touching is C.
+- **Why test the Witvliet worms, and why two of them separately?** Cook and Varshney trace the same images of the same
+  1980s animals, so they cannot show whether the rules hold in other worms. Witvliet's adults are new animals. Keeping
+  the two separate shows how much rules vary between individual worms, a baseline for judging the comparison with Cook.
+- **Can left/right partners bias the rules?** Yes. Partners have identical expression in X and often share a gap
+  junction, so one AVAL-AVAR link counts as evidence for every same-gene rule the pair shares. Same-gene rules may partly
+  reflect "partners connect" rather than innexin docking; rerunning without partner pairs would test this.
 - **Why are the inx-5 and inx-11 rows identical?** Both genes are expressed only in DVC, so the data cannot separate
   them, and ridge regression splits their weight equally.
 

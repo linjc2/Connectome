@@ -24,6 +24,12 @@ fetch "$OPENWORM/SI%205%20Connectome%20adjacency%20matrices%2C%20corrected%20Jul
 fetch "$OPENWORM/herm_full_edgelist.csv" \
       data/raw/connectome/herm_full_edgelist.csv \
       142693f17556148d7f962835b18ac6dd5af18b7467eef61815ebc1dd5474c0ca
+fetch "$OPENWORM/witvliet_2020_7%20adult.xlsx" \
+      data/raw/connectome/witvliet2021_adult1.xlsx \
+      d0fd2dd32adbe5f04ce90a2e5b74c01c9a831876527b0a2b8bd5b94edc86b037
+fetch "$OPENWORM/witvliet_2020_8%20adult.xlsx" \
+      data/raw/connectome/witvliet2021_adult2.xlsx \
+      fdead89606257c1b26e57069fbe1de14c7696633b75b59b79e74c0bcc3497e62
 fetch "$VARSHNEY/ConnOrdered_040903.mat" \
       data/raw/connectome/ConnOrdered_040903.mat \
       bd05af64c7d8c14ff44988e0f009b45d1ebe7db0b7194fff341fc4885cc91d38

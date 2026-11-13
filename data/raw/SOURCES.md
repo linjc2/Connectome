@@ -7,6 +7,7 @@
 | connectome/cook2019_SI5_adjacency_matrices_original.xlsx | https://github.com/openworm/ConnectomeToolbox (Cook 2019 SI 5, original) | GJ connectome B, main run (`src/build_cook_B.py`) |
 | connectome/cook2019_SI5_adjacency_matrices_corrected_2020-07.xlsx | same (Cook 2019 SI 5, corrected July 2020) | check only; same gap-junction result as the original |
 | connectome/herm_full_edgelist.csv | same repo (WormWiring hermaphrodite edge list, Cook data) | GJ connectome B as the authors built it (`src/build_cook_B_wormwiring.py`) |
+| connectome/witvliet2021_adult1.xlsx, connectome/witvliet2021_adult2.xlsx | same repo (`witvliet_2020_7 adult.xlsx`, `witvliet_2020_8 adult.xlsx`; Witvliet et al. 2021, *Nature*) | independent replication: GJ connectomes of two new adult animals (`src/build_witvliet_B.py`) |
 
 All files above are fetched and checksum-verified by `src/download_data.sh`.
 | expression/Altun2009_DevDyn_innexin_map.pdf | https://www.wormatlas.org/papers/Altun%202009.pdf | innexin expression X (figures/tables, needs manual curation) |

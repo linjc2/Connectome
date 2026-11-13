@@ -39,6 +39,22 @@ python src/build_varshney_B.py
 python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_varshney.csv data/reference_authors/INXExpressionJustContact.csv 0.12 results/varshney
 ```
 
+Independent replication on the two Witvliet et al. 2021 adult connectomes (new animals), at each one's
+cross-validated alpha and at alpha = 0.215, then compare the rules across all four connectomes:
+
+```bash
+python src/build_witvliet_B.py
+python src/select_alpha.py data/processed/B_witvliet_adult1.csv results/witvliet_adult1/alpha_scan.csv
+python src/select_alpha.py data/processed/B_witvliet_adult2.csv results/witvliet_adult2/alpha_scan.csv
+python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_witvliet_adult1.csv data/reference_authors/INXExpressionJustContact.csv 15.849 results/witvliet_adult1
+python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_witvliet_adult2.csv data/reference_authors/INXExpressionJustContact.csv 6.3096 results/witvliet_adult2
+python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_witvliet_adult1.csv data/reference_authors/INXExpressionJustContact.csv 0.215 results/witvliet_adult1
+python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_witvliet_adult2.csv data/reference_authors/INXExpressionJustContact.csv 0.215 results/witvliet_adult2
+python src/scm.py data/reference_authors/ContactSubgraphMatrix.csv data/processed/B_varshney.csv data/reference_authors/INXExpressionJustContact.csv 0.215 results/varshney
+python src/compare_connectomes.py gcv
+python src/compare_connectomes.py fixed
+```
+
 Rebuild B from Cook 2019 SI 5 instead and rerun with it:
 
 ```bash

@@ -81,3 +81,78 @@ z-scores, Fig. S4 Varshney rules and z-scores, Fig. S6 Cook and Varshney Moore-P
 <img src="figures/figS6_moore_penrose.png" width="700" alt="Fig. S6">
 
 Explanations of the terms and the procedure: [`supplementary/README.md`](../supplementary/README.md).
+
+## Independent replication: Witvliet et al. 2021 adults
+
+**Why it is needed.** Cook and Varshney are two tracings of the same electron-microscopy images of the White et al.
+1986 animals, so their agreement mostly measures how consistently two groups annotate the same worms, not whether the
+rules hold in other worms. A genetic rule should appear in every individual.
+
+**The data.** Witvliet et al. 2021 (*Nature*, "Connectomes across development reveal principles of brain maturation")
+imaged the nerve ring of 8 new hermaphrodites, from newborn L1 larvae to adults, with serial-section electron
+microscopy, and traced every neuron and synapse in it. We use the two adults: different animals, a different lab, newer
+methods. Keeping them separate also gives a baseline for worm-to-worm variation: the two adults share 157 gap-junction
+links (63% of adult 1's, 55% of adult 2's), about as much overlap as Cook and Varshney (Jaccard 0.42 vs 0.40).
+
+Same 185 neurons and the authors' C and X; only B changes. The three kinds of comparison:
+
+| Comparison | What differs | What it tests |
+|------------|--------------|---------------|
+| Cook vs Varshney | annotation of the same images | consistency of tracing |
+| Witvliet adult 1 vs 2 | the animal | worm-to-worm variation |
+| Cook/Varshney vs Witvliet | animals, lab, methods | all of the above |
+
+- **B** (`src/build_witvliet_B.py`): electrical synapses, symmetrized, binarized, masked by C. 180 of the 185 neurons
+  are in the data (missing: the ventral-cord motor neurons SABD, VB01, VB02, VC01, VD01). Adult 1: 250 links (17
+  outside C removed); adult 2: 283 links (21 removed). Fewer gap junctions than Cook (601), similar to Varshney (301).
+- **alpha** (`src/select_alpha.py`): the cross-validation minimum is at alpha = 15.85 (adult 1) and 6.31 (adult 2), far
+  above Cook's 0.215, but the curves are flat: the score at 0.215 is within 1%. Results are shown at both choices.
+  A large alpha does not mean worse data. At alpha = 0.215 the model ranks real gap junctions above non-connections
+  about equally well in all four (AUC 0.64 Cook, 0.69 Varshney, 0.65 and 0.66 Witvliet; 0.71-0.76 among pairs where
+  both neurons express an innexin). The flexibility of a small alpha mainly helps rules of rare genes, and the
+  Witvliet animals have almost no gap junctions on those neurons (none for inx-3/inx-3 or inx-10/inx-2), so
+  cross-validation prefers to shrink.
+- **Comparison** (`src/compare_connectomes.py`): `connectome_comparison_{gcv,fixed}.csv` and
+  `figures/rules_across_connectomes_{gcv,fixed}.png`. A rule counts as replicated if z >= 2 and at least one gap
+  junction exists among the touching neuron pairs it applies to (see caveat 1).
+
+| | alpha = 0.215 for all | each at its cross-validated alpha |
+|---|---|---|
+| Of Cook's 19 rules, significant in Witvliet adult 1 / 2 | 8 / 5 | 8 / 5 |
+| Of the 12 Cook-and-Varshney rules, significant in Witvliet adult 1 / 2 | 6 / 4 | 6 / 4 |
+| Significant in all four connectomes | inx-12/inx-12, inx-19/inx-19, unc-9/unc-9, inx-7/inx-7 | inx-12/inx-12, inx-19/inx-19, unc-9/unc-9, inx-9/inx-17 |
+| Significant in 3 of 4 | inx-13/inx-13, inx-18/inx-18, inx-2/inx-2, inx-9/inx-9 | inx-13/inx-13, inx-18/inx-18, inx-2/inx-2, inx-7/inx-7 |
+| Negative rules (z <= -2) in 3 or 4 | inx-9/inx-12, inx-9/inx-13, inx-10/inx-13, inx-3/inx-13 | inx-9/inx-12, inx-9/inx-13, inx-2/inx-13 |
+| z-score correlation: Cook-Varshney / Witvliet 1-2 / across | 0.83 / 0.75 / 0.58-0.65 | 0.83 / 0.73 / 0.50-0.55 |
+
+![Rules across connectomes](figures/rules_across_connectomes_gcv.png)
+
+**Findings.**
+- The strongest rules replicate in new animals: inx-12/inx-12, inx-19/inx-19 and unc-9/unc-9 are significant in all
+  four connectomes at both alpha choices, and inx-7/inx-7, inx-13/inx-13, inx-18/inx-18 and inx-2/inx-2 in at least 3.
+- Nearly all replicated rules are same-gene (homotypic). The only different-gene rule in all four is inx-9/inx-17, and
+  only at the cross-validated alpha. Most of Cook's heterotypic rules (e.g. inx-10 with inx-2, inx-3, inx-5, inx-11) are
+  not significant in Witvliet.
+- The two Witvliet adults agree with each other (r = 0.73-0.75) about as well as Cook and Varshney do (0.83), but less
+  with Cook and Varshney (0.50-0.65): part of what Cook and Varshney share may come from the shared animals.
+- Two avoidance rules replicate at both alphas: inx-9/inx-12 and inx-9/inx-13.
+- Rules significant in exactly 2 of 4 mostly split by family of data: of 18 such rules (cross-validated alpha), 7 are
+  significant only in the two Witvliet adults and 5 only in Cook and Varshney. Most involve rare genes, where a few gap
+  junctions decide the result: inx-10/inx-2 has 4 and 3 gap junctions in Cook and Varshney (z = 2.1, 2.2) and none in
+  either Witvliet adult (z = -1.4, -1.5). A rule with no gap junctions where chance expects some gets a negative z.
+  Rules from rare genes and few gap junctions should be treated as unconfirmed.
+
+**Caveats.**
+1. **Significance without direct evidence.** At alpha = 0.215, inx-3/inx-3 has z = 2.3 and 2.4 in the Witvliet adults
+   although none of the 19 touching pairs of inx-3 neurons has a gap junction. The weight comes indirectly from the
+   regression (offsetting other rules that apply to the same neurons). It disappears at the cross-validated alpha.
+   Such cells are marked * and not counted as replicated. Varshney's inx-11/inx-12 and inx-5/inx-12 (z = 2.0) are of
+   this kind too.
+2. **Left/right partners.** Most neurons come in mirror-image left/right pairs of the same class (e.g. AVAL and AVAR,
+   see `supplementary/README.md`). X is per neuron class, so all 83 left/right pairs among the 185 neurons have
+   identical expression, and partners often share a gap junction. Of the gap junctions between two neurons expressing the same
+   gene, 13-24% (unc-9) to 30-45% (inx-19) are between partners. Same-gene rules may therefore partly reflect "left and
+   right partners connect" rather than innexin docking.
+3. **C comes from the old animals.** Contacts differ between individuals; 17 and 21 Witvliet gap junctions fall
+   outside C and are dropped.
+4. **Less data.** With half as many gap junctions as Cook, weak rules can fail to replicate for lack of power.
