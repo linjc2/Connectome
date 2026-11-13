@@ -51,6 +51,43 @@ inx-8/inx-12, has Varshney z = 1.96, which SI Fig. S4 prints as 2.0. No other ru
 - Correlation of the two O matrices: 0.82 (z-scores: 0.83). Varshney has half as many links (301 vs 601), so it is the noisier fit.
 - `varshney/*_0.2150.*` is the same run at the Cook alpha for comparison: 20 rules, the same 11 shared.
 
+## Fig. 5: the network of significant rules
+
+`src/plot_fig5.py` redraws the main-text Fig. 5 from our Cook run (alpha = 0.215) and Varshney run (alpha = 0.12).
+The box positions follow the paper's layout; which links exist, their colors and their numbers are computed from our
+results. All 19 rules, all weights and all colors match the paper.
+
+![Fig. 5 recreated](figures/fig5_rule_network.png)
+
+**How to read it.**
+- **Boxes** are innexin genes. 17 of the 18 are drawn; unc-7 has no significant rule.
+- **A line** between two boxes is a significant different-gene (heterotypic) rule: neurons expressing one gene tend to
+  form gap junctions with touching neurons that express the other, more than random wiring would give (z >= 2).
+- **A loop** on a box is a significant same-gene (homotypic) rule, e.g. inx-12 neurons connect to other inx-12 neurons.
+- **The number and the thickness** are the rule weight O from the Cook fit. The paper reads it as an estimated
+  connection probability: inx-2/inx-10 = 0.66 means that touching neurons where one expresses inx-2 and the other
+  inx-10 form a gap junction in about 66% of cases. When several rules apply to the same pair of neurons, their weights
+  add up, so this is a guide rather than an exact probability.
+- **Dark blue** rules are also significant in the Varshney connectome (12 rules); **light blue** only in Cook (7). Dark
+  blue is the paper's robustness check. inx-8/inx-12 is dark although its Varshney z is 1.96, because the SI prints it
+  as 2.0 and the paper counts it.
+- **\*** marks the five rules the paper lists as already found in experiments: inx-19/inx-19, unc-9/unc-9,
+  inx-10/inx-11, inx-3/inx-3 and inx-6/inx-6. Finding all five among 19 predictions is the paper's main validation.
+
+**What it shows.**
+- **Two clusters of different-gene rules.** Top: a chain inx-9 - inx-17 - inx-13 - inx-8 - inx-12 with che-7 on
+  inx-17, mostly dark blue. Bottom left: inx-10 as a hub with inx-2, inx-3, inx-5 and inx-11, mostly light blue. The
+  inx-10 hub rests on very few neurons (inx-10, inx-2, inx-5 and inx-11 are each expressed in 1-4 neurons), which is
+  why its weights are large but only inx-2/inx-10 is confirmed by Varshney.
+- **inx-5 and inx-11 are twins.** Both are expressed only in neuron DVC, so their rules are identical (0.78 each).
+- **Loops that stand alone** (inx-7, unc-9, inx-19): same-gene rules with no different-gene partner. Some have small
+  weights (unc-9 0.06, inx-7 0.09) but high z-scores (3.1 and 2.4), because the gene is expressed in many neurons and a small,
+  consistent effect is still unlikely to be chance.
+- **Not shown:** negative ("avoid") rules, such as inx-9/inx-12 (z = -3.8), and rules with 0 < z < 2.
+
+**How later tests change the picture.** In the Witvliet animals (below), the dark-blue loops of inx-12, inx-19 and unc-9
+hold up, the inx-10 hub does not, and inx-9/inx-17 holds at the cross-validated alpha.
+
 ## SI figures (`figures/`)
 
 `src/plot_si_figures.py` recreates SI Figs. S2-S6 from our data (S1 is a schematic). `src/check_against_si.py` reads the

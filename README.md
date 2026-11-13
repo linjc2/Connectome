@@ -69,6 +69,7 @@ compare our numbers with the tables printed in the SI PDF (not in the repository
 python src/plot_si_figures.py
 python src/check_against_si.py pnas.2009093117.sapp.pdf
 python src/plot_supplementary.py
+python src/plot_fig5.py
 ```
 
 See [results/README.md](results/README.md) for what the outputs mean.

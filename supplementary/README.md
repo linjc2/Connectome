@@ -26,7 +26,8 @@ bold. The four "-" cells are undefined: inx-5 and inx-11 are expressed only in D
 
 <img src="figures/rule_network.png" width="520" alt="Network of the 19 significant rules">
 
-**The 19 significant rules as a network.** This draws the bold cells of the table above. Each gene is a dot on the
+**The 19 significant rules as a network.** This draws the bold cells of the table above; it is the paper's Fig. 5
+in a circular layout (the paper-style version, with weights, is in [`results/README.md`](../results/README.md)). Each gene is a dot on the
 circle, and each significant rule is a line between its two genes (heterotypic, e.g. inx-9/inx-17) or a ring around
 one gene (homotypic, e.g. inx-12/inx-12: neurons expressing inx-12 tend to connect to other neurons expressing
 inx-12). Blue rules are also significant in the independent Varshney connectome (12); gray ones only in Cook (7).
