@@ -98,6 +98,9 @@ to the largest positive ones (1.75 and 2.73), so
 
 ## Procedure
 
+A short overview; the Kronecker product, ridge regression and the code are explained step by step in
+[The code in detail](#the-code-in-detail).
+
 ```mermaid
 flowchart LR
     A["Raw data<br/>Cook / Varshney connectome,<br/>innexin expression, contactome"] --> B["Build B, C, X<br/>185 anterior neurons"]
@@ -171,6 +174,86 @@ rules for experimental validation; agreement between two connectomes (step 7) is
 **7. Robustness.** Steps 2–6 are repeated on the Varshney connectome, a separate reconstruction from the same
 electron-microscopy images. The question is not whether the numbers are identical but whether the same rules come out
 significant: 12 do.
+
+## The code in detail
+
+### The Kronecker product
+
+**Why it is needed.** In B = X O Xᵀ the unknown O sits between two copies of X, so the model is *bilinear*, not the
+y = Xβ form that regression can solve. The Kronecker product rewrites it so that O is a single vector of unknowns.
+
+**Definition.** For X with one row per neuron and one column per gene, K = X ⊗ X has one row per *neuron pair* (i, j)
+and one column per *gene pair* (a, b), with
+
+$$K_{(i,j),(a,b)} = X_{ia}\, X_{jb}$$
+
+The entry is 1 only when neuron *i* expresses gene *a* and neuron *j* expresses gene *b*, i.e. when rule O[a,b] applies to
+that neuron pair. Flattening B and O row by row gives vec(X O Xᵀ) = (X ⊗ X) vec(O), so **b = K o**: an ordinary linear
+regression with K as the design matrix.
+
+![Kronecker product for 2 neurons and 2 genes](figures/kronecker_example.png)
+
+**Reading the example.** Neuron 1 expresses g1; neuron 2 expresses g1 and g2. The row for pair (1,2) is [1, 1, 0, 0],
+so the model predicts b<sub>12</sub> = O[g1,g1] + O[g1,g2]: the two rules that link a g1 neuron to a neuron with g1 or
+g2. Pair (2,2) switches on all four rules.
+
+**On the real data (Cook):**
+
+| Quantity | Value | Meaning |
+|----------|-------|---------|
+| K | 34,225 × 324 | every ordered neuron pair (185²) × every gene pair (18²) |
+| K′ (touching pairs only) | 11,149 × 324 | rows where C = 1 |
+| Ones in b′ | 1,195 | the 601 gap junctions, each counted as (i,j) and (j,i), except the 7 self-loops |
+| Rows of K′ that are all zero | 4,420 | one of the two neurons expresses no innexin; these pairs cannot affect O |
+| Columns of K′ that are all zero | 4 | inx-5/inx-11 combinations: their only neuron, DVC, does not touch itself. Weight 0, z undefined (the "-" cells) |
+| Touching pairs a rule applies to | unc-9/unc-9: 2,607; inx-12/inx-12: 123; inx-10/inx-10: 13; inx-10/inx-2: 7 | how much data supports each weight |
+
+### Ridge regression
+
+**Why ordinary least squares fails.** Least squares chooses o to minimize ‖b′ − K′o‖², giving
+o = (K′ᵀK′)⁻¹K′ᵀb′. That needs K′ᵀK′ (324 × 324) to be invertible, but its rank is only **282**: 42 directions in
+the 324 weights are not determined by the data. The causes are the identical inx-5 and inx-11 columns, the 4 empty
+columns above, and other gene pairs whose columns are combinations of each other. Infinitely many O fit equally well.
+
+**The fix.** Add a penalty on the size of the weights and minimize
+
+$$\lVert b' - K'o \rVert^2 + \alpha \lVert o \rVert^2$$
+
+Setting the derivative to zero, −2K′ᵀ(b′ − K′o) + 2αo = 0, gives
+
+$$o = (K'^\mathsf{T}K' + \alpha I)^{-1} K'^\mathsf{T} b'$$
+
+Adding α > 0 to every diagonal entry makes the matrix invertible, so there is exactly one answer. Among weights that fit
+almost equally well, the penalty picks the smallest: tied genes get equal shares (identical inx-5 and inx-11 rows), and
+rules with little data behind them are pulled toward 0.
+
+![Ridge path](figures/ridge_path.png)
+
+**Reading the ridge path.** Each line is one rule's weight as α changes (log scale).
+- **Left (α → 0):** the weights level off at the Moore-Penrose solution, the same numbers as SI Fig. S6 (e.g.
+  inx-10/inx-11 = 1.15, inx-10/inx-2 = 1.10).
+- **Right (large α):** every weight is pushed to 0, and the model underfits.
+- **At α = 0.215:** rules backed by many touching pairs barely move (unc-9/unc-9, 2,607 pairs; inx-12/inx-12, 123),
+  while rules backed by few are shrunk a lot (inx-10/inx-2, 7 pairs: 1.10 → 0.66). This is the penalty doing its job:
+  it trusts weights only as far as the data supports them.
+- α itself is chosen by generalized cross-validation (step 5 and SI Fig. S2).
+
+### The code, line by line (`src/scm.py`)
+
+| Lines | Code | What it does |
+|-------|------|--------------|
+| 13 | `k = np.kron(X, X)` | builds K (34,225 × 324) |
+| 14 | `kp = k[C.flatten() == 1]` | keeps the touching pairs: K′ (11,149 × 324) |
+| 15 | `ka = np.linalg.solve(kp.T @ kp + alpha * I, kp.T)` | the ridge operator A = (K′ᵀK′ + αI)⁻¹K′ᵀ; `solve` is more accurate than inverting the matrix |
+| 20 | `bp = B.flatten()[C.flatten() == 1]` | b′: 1 where a touching pair has a gap junction |
+| 21 | `(ka @ bp).reshape(18, 18)` | o = A b′, reshaped into the 18 × 18 rule matrix O |
+| 29 | `alpha_matrix.out B.txt C.txt 185 100` | the authors' C++ program: link probabilities p<sub>ij</sub> of the random ensemble (100 iterations) |
+| 33-34 | `mean = ka @ pp`, `var = (ka * ka) @ (pp * (1 - pp))` | mean and variance of each rule under chance |
+| 46 | `z = (O - mean) / np.sqrt(var)` | z-scores; 0/0 for the 4 empty columns gives the "-" cells |
+
+`scm.py` is a Python 3 port of the authors' Python 2 scripts (`SCM_alpha.py`, `SCM_alpha_rnd.py`); the results match
+theirs to about 10⁻¹². The α scan of SI Fig. S2 is in `src/plot_si_figures.py`, which computes τ = trace(I − K′A)
+without building the 11,149 × 11,149 matrix.
 
 ## Data
 

@@ -1,4 +1,5 @@
-"""Explanatory figures for supplementary/: the input matrices, the z-scores of O, the rule network, and Cook vs Varshney.
+"""Explanatory figures for supplementary/: the input matrices, the z-scores of O, the rule network, Cook vs Varshney,
+a small Kronecker product example, and the ridge path (rule weights as alpha changes).
 
 Usage (from the repository root): python src/plot_supplementary.py
 Needs the SCM runs in results/authors_inputs (Cook) and results/varshney (alpha 0.12).
@@ -20,6 +21,67 @@ BINARY = ListedColormap(["#ffffff", INK])
 # Hand-placed labels for points that sit close together in cook_vs_varshney.png
 LABEL_OFFSET = {"inx-13/inx-13": (-7, 3), "unc-9/unc-9": (-6, 8), "inx-19/inx-19": (6, -2),
                 "inx-10/inx-2": (-7, 4), "inx-18/inx-6": (6, 6), "inx-12/inx-8": (6, -9)}
+
+
+def kronecker_example():
+    """K = X ⊗ X for 2 neurons and 2 genes: one row per neuron pair, one column per gene pair."""
+    X = np.array([[1, 0], [1, 1]])
+    K = np.kron(X, X)
+    pairs = ["(1,1)", "(1,2)", "(2,1)", "(2,2)"]
+    genes = ["(g1,g1)", "(g1,g2)", "(g2,g1)", "(g2,g2)"]
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.6), gridspec_kw={"width_ratios": [1, 1.6]})
+    for ax, M, rows, cols, title in [
+        (axes[0], X, ["neuron 1", "neuron 2"], ["g1", "g2"], "X: which genes each neuron expresses"),
+        (axes[1], K, [f"pair {p}" for p in pairs], genes, "K = X ⊗ X: entry = X[i,a] · X[j,b]")]:
+        ax.imshow(M, cmap=ListedColormap(["#ffffff", "#c6dbef"]), vmin=0, vmax=1)
+        for (r, c), v in np.ndenumerate(M):
+            ax.text(c, r, str(v), ha="center", va="center", fontsize=12, color=INK)
+        ax.set_xticks(range(M.shape[1]), cols, fontsize=9)
+        ax.set_yticks(range(M.shape[0]), rows, fontsize=9)
+        ax.xaxis.tick_top()
+        ax.tick_params(length=0, labelcolor=INK)
+        ax.set_xticks(np.arange(-0.5, M.shape[1]), minor=True)
+        ax.set_yticks(np.arange(-0.5, M.shape[0]), minor=True)
+        ax.grid(which="minor", color=GRID, linewidth=1)
+        ax.tick_params(which="minor", length=0)
+        for s in ax.spines.values():
+            s.set_visible(False)
+        ax.set_title(title, fontsize=10, color=INK, loc="left", pad=28)
+    axes[1].set_xlabel("columns: gene pair (a, b), the rule O[a,b] it switches on", fontsize=9, color=MUTED)
+    fig.tight_layout()
+    fig.savefig(f"{OUT}/kronecker_example.png", dpi=150)
+    plt.close(fig)
+
+
+def ridge_path(C, B, X):
+    """Rule weights as the ridge penalty alpha changes, for a few rules (Cook data)."""
+    keep = C.flatten() == 1
+    kp, bp = np.kron(X, X)[keep], B.flatten()[keep]
+    kk, kb = kp.T @ kp, kp.T @ bp
+    alphas = np.logspace(-4, 1.5, 60)
+    O = np.array([np.linalg.solve(kk + a * np.eye(324), kb) for a in alphas])
+    rules = [("inx-12", "inx-12"), ("inx-9", "inx-9"), ("inx-10", "inx-2"), ("inx-10", "inx-11"),
+             ("inx-12", "inx-9"), ("unc-9", "unc-9")]
+    colors = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#56B4E9", "#E69F00"]  # Okabe-Ito, colorblind-safe
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for (a, b), col in zip(rules, colors):
+        w = O[:, GENES.index(a) * 18 + GENES.index(b)]
+        label = f"{a}/{b}" + (" (= inx-10/inx-5)" if b == "inx-11" else "")
+        ax.plot(alphas, w, color=col, linewidth=2, label=label)
+    ax.axvline(0.215, color=MUTED, linestyle="--", linewidth=1)
+    ax.annotate("α = 0.215\n(chosen)", (0.215, ax.get_ylim()[1]), xytext=(4, -24), textcoords="offset points",
+                fontsize=9, color=INK)
+    ax.axhline(0, color=MUTED, linewidth=0.8)
+    ax.set_xscale("log")
+    ax.set_xlim(alphas[0], alphas[-1])
+    ax.set_xlabel("ridge penalty α (log scale)", color=INK)
+    ax.set_ylabel("rule weight O[a,b]", color=INK)
+    ax.set_title("Ridge path: weights shrink toward 0 as α grows (Cook data)", fontsize=11, color=INK, loc="left")
+    ax.legend(frameon=False, fontsize=8, labelcolor=INK, loc="lower left")
+    style(ax)
+    fig.tight_layout()
+    fig.savefig(f"{OUT}/ridge_path.png", dpi=150)
+    plt.close(fig)
 
 
 def matrices(C, B, X):
@@ -133,6 +195,8 @@ def main():
 
     Zc, Zv = load("results/authors_inputs/zscores_0.2150.csv"), load("results/varshney/zscores_0.1200.csv")
     matrices(C, B, X)
+    kronecker_example()
+    ridge_path(C, B, X)
     o_zscores(Zc)
     rule_network(Zc, Zv)
     cook_vs_varshney(Zc, Zv)
